@@ -1,0 +1,373 @@
+<title>Pipeline Breakeven Calculator</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: a single centered worksheet column — header, editable inputs, a hero breakeven stat, a cost breakdown, then the Metro Auto Spa reference card as separate, clearly-labeled proof */
+:root{
+  --bg:#F7F3E8;
+  --surface:#FFFFFF;
+  --surface-dark:#24402F;
+  --fg:#141311;
+  --muted:#5B5E52;
+  --faint:#8A857A;
+  --accent:#A6874F;
+  --border:#E2DED0;
+  --highlight-bg:#FBF3E2;
+  --on-dark:#F7F3E8;
+  --on-dark-muted:#B5B0A0;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#141311;
+    --surface:#1C2A20;
+    --surface-dark:#24402F;
+    --fg:#F7F3E8;
+    --muted:#B5B0A0;
+    --faint:#938D80;
+    --accent:#C7A565;
+    --border:#33382F;
+    --highlight-bg:#1F2A1F;
+    --on-dark:#F7F3E8;
+    --on-dark-muted:#C9C4B4;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#141311;
+  --surface:#1C2A20;
+  --surface-dark:#24402F;
+  --fg:#F7F3E8;
+  --muted:#B5B0A0;
+  --faint:#938D80;
+  --accent:#C7A565;
+  --border:#33382F;
+  --highlight-bg:#1F2A1F;
+  --on-dark:#F7F3E8;
+  --on-dark-muted:#C9C4B4;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--fg);
+  font-family:'Archivo',Arial,sans-serif;
+  padding-inline:16px;
+  padding-block:48px;
+}
+.page{
+  max-width:720px;
+  margin:0 auto;
+  display:flex;
+  flex-direction:column;
+  gap:32px;
+}
+.eyebrow{
+  font-size:13px;
+  font-weight:700;
+  letter-spacing:2px;
+  text-transform:uppercase;
+  color:var(--accent);
+  margin:0;
+}
+h1{
+  font-family:'Archivo',Arial,sans-serif;
+  font-size:clamp(28px,5vw,44px);
+  font-weight:700;
+  line-height:1.15;
+  margin:8px 0 0;
+  text-wrap:balance;
+}
+.lede{
+  font-size:16px;
+  line-height:1.6;
+  color:var(--muted);
+  margin:0;
+  max-width:60ch;
+}
+.name-row{
+  display:flex;
+  align-items:baseline;
+  gap:10px;
+  flex-wrap:wrap;
+  font-size:16px;
+  color:var(--muted);
+}
+.name-row input{
+  font-family:'Archivo',Arial,sans-serif;
+  font-size:16px;
+  font-weight:600;
+  color:var(--fg);
+  background:transparent;
+  border:none;
+  border-bottom:1.5px dashed var(--border);
+  padding:2px 2px 4px;
+  min-width:10ch;
+  max-width:100%;
+}
+.name-row input:focus{outline:none;border-bottom-color:var(--accent)}
+.card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:18px;
+  padding:28px;
+  display:flex;
+  flex-direction:column;
+  gap:20px;
+}
+.field-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:16px;
+}
+@media (max-width:480px){.field-grid{grid-template-columns:1fr}}
+label{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  font-size:12.5px;
+  font-weight:700;
+  letter-spacing:0.4px;
+  text-transform:uppercase;
+  color:var(--faint);
+}
+.input-wrap{
+  position:relative;
+  display:flex;
+  align-items:center;
+}
+.input-wrap span{
+  position:absolute;
+  left:14px;
+  font-size:18px;
+  color:var(--muted);
+  font-weight:600;
+}
+input[type="number"]{
+  width:100%;
+  font-family:'Archivo',Arial,sans-serif;
+  font-size:18px;
+  font-weight:600;
+  color:var(--fg);
+  background:var(--bg);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:12px 14px 12px 32px;
+  font-variant-numeric:tabular-nums;
+}
+input[type="number"]:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:transparent}
+.fee-note{
+  font-size:13px;
+  color:var(--faint);
+  margin:0;
+}
+.divider{
+  height:1px;
+  background:var(--border);
+  border:none;
+  margin:0;
+}
+.cost-rows{display:flex;flex-direction:column;gap:10px}
+.cost-row{
+  display:flex;
+  justify-content:space-between;
+  align-items:baseline;
+  font-size:15px;
+  color:var(--muted);
+}
+.cost-row.total{
+  color:var(--fg);
+  font-weight:700;
+  font-size:16px;
+  padding-top:10px;
+  border-top:1px solid var(--border);
+}
+.cost-row span:last-child{font-variant-numeric:tabular-nums}
+.hero{
+  background:var(--surface-dark);
+  color:var(--on-dark);
+  border-radius:18px;
+  padding:36px 28px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  text-align:center;
+  gap:6px;
+}
+.hero .eyebrow{color:var(--accent)}
+.stat{
+  font-size:clamp(56px,14vw,88px);
+  font-weight:700;
+  line-height:1;
+  font-variant-numeric:tabular-nums;
+  margin:4px 0;
+}
+.stat-unit{
+  font-size:18px;
+  font-weight:500;
+  color:var(--on-dark-muted);
+}
+.hero p{
+  font-size:15px;
+  color:var(--on-dark-muted);
+  margin:4px 0 0;
+  max-width:46ch;
+}
+.proof{
+  border:2px solid var(--accent);
+  background:var(--highlight-bg);
+  border-radius:18px;
+  padding:28px;
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+}
+.proof-stats{
+  display:flex;
+  gap:28px;
+  flex-wrap:wrap;
+}
+.proof-stat h2{
+  font-size:40px;
+  font-weight:700;
+  margin:0;
+  font-variant-numeric:tabular-nums;
+}
+.proof-stat p{
+  font-size:12.5px;
+  font-weight:700;
+  letter-spacing:0.5px;
+  text-transform:uppercase;
+  color:var(--muted);
+  margin:4px 0 0;
+}
+.fine{
+  font-size:12.5px;
+  line-height:1.5;
+  color:var(--faint);
+  margin:0;
+}
+footer{
+  text-align:center;
+  font-size:12.5px;
+  color:var(--faint);
+}
+</style>
+
+<div class="page" id="page">
+  <div>
+    <p class="eyebrow">Pipeline Creative &middot; Breakeven Worksheet</p>
+    <h1>What would it take for this to pay for itself?</h1>
+    <p class="lede" style="margin-top:12px">Two numbers from your own business, run against our founding rate. No guesswork, no outside benchmarks — just the math for <span class="name-row" style="display:inline"></span> this specific business.</p>
+  </div>
+
+  <div class="name-row">
+    Prepared for
+    <input id="bizName" type="text" value="Your Business" aria-label="Business name" />
+  </div>
+
+  <div class="card">
+    <div class="field-grid">
+      <label>Average revenue per job
+        <div class="input-wrap">
+          <span>$</span>
+          <input id="jobValue" type="number" min="0" step="5" value="350" inputmode="decimal" />
+        </div>
+      </label>
+      <label>Planned monthly ad spend
+        <div class="input-wrap">
+          <span>$</span>
+          <input id="adSpend" type="number" min="0" step="25" value="750" inputmode="decimal" />
+        </div>
+      </label>
+    </div>
+    <p class="fee-note">Edit either number for the business you're pitching — this recalculates live.</p>
+
+    <hr class="divider" />
+
+    <div class="cost-rows">
+      <div class="cost-row"><span>Pipeline Creative management (founding rate)</span><span id="feeOut">$1,000</span></div>
+      <div class="cost-row"><span>Your ad spend (goes straight to the platform, not to us)</span><span id="adOut">$750</span></div>
+      <div class="cost-row total"><span>Total monthly investment</span><span id="totalOut">$1,750</span></div>
+    </div>
+  </div>
+
+  <div class="hero">
+    <p class="eyebrow">Jobs needed to break even</p>
+    <p class="stat"><span id="breakevenOut">5</span><span class="stat-unit" id="breakevenUnit"> jobs / mo</span></p>
+    <p>At a <span id="jobValueEcho">$350</span> average job, that's what covers the whole investment. Every job past that is margin, not just revenue.</p>
+  </div>
+
+  <div class="proof">
+    <p class="eyebrow" style="color:var(--muted)">For reference — our own numbers</p>
+    <div class="proof-stats">
+      <div class="proof-stat">
+        <h2>16x</h2>
+        <p>Return on ad spend</p>
+      </div>
+      <div class="proof-stat">
+        <h2>$12.50</h2>
+        <p>Cost per acquired customer</p>
+      </div>
+    </div>
+    <p class="fine">This is what Pipeline Creative's own business, Metro Auto Spa, achieved running this exact system — shown as context for what's achievable with disciplined execution, not a guarantee for every business or industry. Your breakeven point above is the only number that's guaranteed by the math.</p>
+  </div>
+
+  <footer>Pipeline Creative &middot; Prepared as a working worksheet, not a formal quote.</footer>
+</div>
+
+<script>
+(function(){
+  var $ = function(id){ return document.getElementById(id); };
+  var jobValue = $('jobValue'), adSpend = $('adSpend'), bizName = $('bizName');
+  var feeOut = $('feeOut'), adOut = $('adOut'), totalOut = $('totalOut');
+  var breakevenOut = $('breakevenOut'), breakevenUnit = $('breakevenUnit'), jobValueEcho = $('jobValueEcho');
+  var MGMT_FEE = 1000;
+
+  function money(n){
+    if (!isFinite(n)) n = 0;
+    return '$' + Math.round(n).toLocaleString('en-US');
+  }
+
+  function recalc(){
+    var jv = parseFloat(jobValue.value);
+    var ad = parseFloat(adSpend.value);
+    if (!isFinite(jv) || jv < 0) jv = 0;
+    if (!isFinite(ad) || ad < 0) ad = 0;
+
+    var total = MGMT_FEE + ad;
+    feeOut.textContent = money(MGMT_FEE);
+    adOut.textContent = money(ad);
+    totalOut.textContent = money(total);
+    jobValueEcho.textContent = money(jv);
+
+    if (jv <= 0) {
+      breakevenOut.textContent = '—';
+      breakevenUnit.textContent = ' set a job value above';
+    } else {
+      var jobsNeeded = Math.ceil(total / jv);
+      breakevenOut.textContent = jobsNeeded.toLocaleString('en-US');
+      breakevenUnit.textContent = jobsNeeded === 1 ? ' job / mo' : ' jobs / mo';
+    }
+
+    try {
+      localStorage.setItem('pc-breakeven-inputs', JSON.stringify({ jv: jobValue.value, ad: adSpend.value, name: bizName.value }));
+    } catch (e) {}
+  }
+
+  try {
+    var saved = JSON.parse(localStorage.getItem('pc-breakeven-inputs') || 'null');
+    if (saved) {
+      if (saved.jv) jobValue.value = saved.jv;
+      if (saved.ad) adSpend.value = saved.ad;
+      if (saved.name) bizName.value = saved.name;
+    }
+  } catch (e) {}
+
+  [jobValue, adSpend, bizName].forEach(function(el){
+    el.addEventListener('input', recalc);
+  });
+
+  recalc();
+})();
+</script>
